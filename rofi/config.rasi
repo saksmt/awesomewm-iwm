@@ -1,0 +1,25 @@
+configuration {
+    window-format: "{c} {t}";
+
+    display-combi: "*";
+    display-drun: "C";
+    display-window: "W";
+    combi-hide-mode-prefix: true;
+
+    theme: "theme";
+    modi-combi: "window,drun";
+    modi: "combi,window,drun";
+    show-icons: true;
+    terminal: "roxterm";
+    run-shell-command: "{terminal} -e 'sh -c \"{cmd}; zsh -il\"'";
+    kb-clear-line: "Shift+Delete";
+    kb-move-front: "Home";
+    kb-move-end: "End";
+    kb-remove-word-forward: "Control+Delete";
+    kb-delete-entry: "Alt+Delete";
+    kb-mode-next: "Tab";
+    kb-mode-previous: "Shift+Tab";
+    kb-row-tab: "";
+    kb-row-first: "Ctrl+Home";
+    kb-row-last: "Ctrl+End";
+}

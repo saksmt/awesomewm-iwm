@@ -1,0 +1,105 @@
+* {
+    fg: #bbbbbb;
+    bg: #3c3f41;
+    selected-bg: #2f65ca;
+    font: "Source Code Pro 26";
+
+    background-color: var(bg);
+    text-color: var(fg);
+    border-color: #646464;
+    margin: 0;
+
+    spacing:0;
+}
+
+window {
+    width: 40%;
+    location: 0;
+    y-offset: -15%;
+    border: 0.05% solid;
+    border-color: #616161;
+    children: [ mainbox ];
+    border-radius: 1;
+}
+
+mainbox {
+    orientation: vertical;
+    children: [ mode-switcher, inputbar, listview ];
+}
+
+case-indicator {
+    margin: 0 2em 0;
+}
+
+textbox-icon-search {
+    font: "wm-ide-icons 26";
+    text-color: #798389;
+    expand: false;
+    padding: 0;
+    str: "f";
+    padding: 0 0 0 1em;
+    width: 2.4em;
+}
+
+inputbar {
+    orientation: horizontal;
+    padding:  0.5% 0;
+    children: [ textbox-icon-search, entry, case-indicator ];
+    border: 0 0 0.1%;
+}
+
+error-message {
+    padding: 1% 1% 0;
+}
+
+button {
+    background-color: #45494a;
+    padding: 0.5%;
+    border: 0 0 0.1%;
+    font: "wm-ide-icons 26";
+}
+
+button selected {
+    background-color: #555a5e;
+}
+
+element {
+    background-color: var(bg);
+    text-color:       var(fg);
+    padding: 0.5%;
+
+    children: [ element-icon, element-text ];
+}
+
+element-icon {
+    expand: false;
+    size: 0.8em;
+    padding: 0 0.5% 0 0;
+}
+
+listview {
+    fixed-height: true;
+    scrollbar: true;
+    spacing: 0;
+    cycle: true;
+    padding: 0 -0.7% 0 0;
+}
+
+scrollbar {
+    handle-width: 0.7%;
+    background-color: #00000000;
+    handle-color: #bbbbbb88;
+    index: 999;
+}
+
+element selected {
+    background-color: var(selected-bg);
+}
+
+element .active {
+    background-color: #3e5f9d99;
+}
+
+element .urgent {
+    background-color: #9d493e99;
+}
