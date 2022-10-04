@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
-mkdir -p ~/config/rofi &>/dev/null
+mkdir -p ~/.config/rofi &>/dev/null
 
-cp -R rofi/* ~/config/rofi
+cp -R rofi/* ~/.config/rofi
