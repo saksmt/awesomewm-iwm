@@ -1,25 +1,65 @@
 configuration {
-    window-format: "{c} {t}";
+	window-format: "{c} {t}";
 
-    display-combi: "*";
-    display-drun: "C";
-    display-window: "W";
-    combi-hide-mode-prefix: true;
+	display-combi: "*";
+	display-drun: "C";
+	display-window: "W";
 
-    theme: "theme";
     modi-combi: "window,drun";
-    modi: "combi,window,drun";
-    show-icons: true;
-    terminal: "roxterm";
-    run-shell-command: "{terminal} -e 'sh -c \"{cmd}; zsh -il\"'";
-    kb-clear-line: "Shift+Delete";
-    kb-move-front: "Home";
-    kb-move-end: "End";
-    kb-remove-word-forward: "Control+Delete";
-    kb-delete-entry: "Alt+Delete";
-    kb-mode-next: "Tab";
-    kb-mode-previous: "Shift+Tab";
-    kb-row-tab: "";
-    kb-row-first: "Ctrl+Home";
-    kb-row-last: "Ctrl+End";
+	modi: "combi,window,drun";
+/*	width: 50;*/
+/*	lines: 15;*/
+/*	columns: 1;*/
+/*	font: "mono 12";*/
+/*	bw: 1;*/
+/*	location: 0;*/
+/*	padding: 5;*/
+/*	yoffset: 0;*/
+/*	xoffset: 0;*/
+/*	fixed-num-lines: true;*/
+	show-icons: true;
+	terminal: "roxterm";
+	run-shell-command: "{terminal} -e 'sh -c \"{cmd}; zsh -il\"'";
+/*	icon-theme: ;*/
+/*	drun-match-fields: "name,generic,exec,categories";*/
+/*	drun-show-actions: false;*/
+/*	drun-display-format: "{name} [<span weight='light' size='small'><i>({generic})</i></span>]";*/
+/*	sort: false;*/
+/*	sorting-method: ;*/
+/*	eh: 1;*/
+/*	matching: "normal";*/
+/*	filter: ;*/
+/*	threads: 0;*/
+	click-to-exit: true;
+/*	show-match: true;*/
+/*	theme: ;*/
+/*	color-normal: ;*/
+/*	color-urgent: ;*/
+/*	color-active: ;*/
+/*	color-window: ;*/
+/*	max-history-size: 25;*/
+	combi-hide-mode-prefix: true;
+/*	cache-dir: ;*/
+/*	pid: "/run/user/1000/rofi.pid";*/
+/*	display-window: ;*/
+/*	display-windowcd: ;*/
+/*	display-run: ;*/
+/*	display-ssh: ;*/
+/*	display-drun: ;*/
+/*	display-combi: ;*/
+/*	display-keys: ;*/
+/*	kb-primary-paste: "Control+V,Shift+Insert";*/
+/*	kb-secondary-paste: "Control+v,Insert";*/
+	kb-clear-line: "Shift+Delete";
+	kb-move-front: "Home";
+	kb-move-end: "End";
+	kb-remove-word-forward: "Control+Delete";
+	kb-delete-entry: "Alt+Delete";
+	kb-mode-next: "Tab";
+	kb-mode-previous: "Shift+Tab";
+	kb-row-tab: "";
+	kb-row-first: "Ctrl+Home";
+	kb-row-last: "Ctrl+End";
 }
+
+@theme "theme"

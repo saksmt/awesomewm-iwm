@@ -101,5 +101,6 @@ element .active {
 }
 
 element .urgent {
+    /*background-color: #9d693e99;*/
     background-color: #9d493e99;
 }
