@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+
+mkdir -p ~/.local/share/fonts
+cp rofi/icons/font/wm-ide-icons.ttf ~/.local/share/fonts
+fc-cache -f -v
+
