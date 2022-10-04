@@ -1,19 +1,20 @@
 import * as naughty from 'naughty';
 import * as beautiful from 'beautiful';
 import * as gears from 'gears';
-import { filesystem as fs, table } from 'gears';
+import {filesystem as fs, table} from 'gears';
 import * as awful from 'awful';
-import { Client, Screen, spawn, Tag, tag } from 'awful';
+import {Client, Screen, spawn, Tag, tag} from 'awful';
 import * as menubar from 'menubar';
 import * as wibox from 'wibox';
-import { layout, Layout, Widget } from 'wibox';
-import { option } from './data/index';
-import { AlignCross, AlignX, Direction, Index, ModifierKey, MouseButton } from 'awesomewm.4.3.ts.d';
+import {layout, Layout, Widget} from 'wibox';
+import {option} from './data/index';
+import {AlignCross, AlignX, Direction, Index, ModifierKey, MouseButton} from 'awesomewm.4.3.ts.d';
 import theme from './theme/index';
 import 'awful.remote';
-import { SeparatorOrientation } from 'awesomewm.4.3.ts.d/awesomewm/wibox/widgets/SeparatorWidget';
+import {SeparatorOrientation} from 'awesomewm.4.3.ts.d/awesomewm/wibox/widgets/SeparatorWidget';
 import LayoutSwitcher from './widgets/keyboard-layout';
-import { forall, isSubset } from './util/index';
+import {forall, isSubset} from './util/index';
+import {Shape} from './graphics/index';
 
 const dpi = beautiful.xresources.apply_dpi;
 
@@ -116,9 +117,13 @@ const tasklistButtons = table.join<awful.Button<Client>>(
       it.emit_signal('request::activate', 'taglist', { raise: true });
     }
   }),
-  awful.button([], MouseButton.Right, () => awful.menu.client_list({ theme: { width: 250 } })),
-  awful.button([], MouseButton.ScrollUp, () => awful.client.focus.byidx(1)),
-  awful.button([], MouseButton.ScrollDown, () => awful.client.focus.byidx(-1)),
+  awful.button([], MouseButton.Right, (it) => {
+    if (it.minimized) {
+      it.emit_signal('request::activate', 'taglist', { raise: true });
+    } else {
+      it.minimized = true;
+    }
+  })
 );
 
 const setWallpaper = (s: Screen) => {
@@ -153,9 +158,7 @@ awful.screen.connect_for_each_screen((s) => {
   myLayoutBox.buttons(
     table.join(
       awful.button([], MouseButton.Left, () => awful.layout.inc(1)),
-      awful.button([], MouseButton.Right, () => awful.layout.inc(-1)),
-      awful.button([], MouseButton.ScrollDown, () => awful.layout.inc(1)),
-      awful.button([], MouseButton.ScrollUp, () => awful.layout.inc(-1)),
+      awful.button([], MouseButton.Right, () => awful.layout.inc(-1))
     ),
   );
 
@@ -209,6 +212,7 @@ awful.screen.connect_for_each_screen((s) => {
                       widget: wibox.widget.textbox,
                     }),
                   ],
+                  right: dpi(3),
                   widget: wibox.container.margin,
                 }),
               ],
@@ -223,6 +227,18 @@ awful.screen.connect_for_each_screen((s) => {
       widget: wibox.container.background,
     }),
   });
+  myTaskList.buttons(table.join(
+    awful.button([ModifierKey.Control], MouseButton.Left, () => {
+      s.selected_tags.flatMap(it => it.clients()).forEach(it => {
+        it.minimized = true
+      })
+    }),
+    awful.button([ModifierKey.Control, ModifierKey.Shift], MouseButton.Left, () => {
+      s.selected_tags.flatMap(it => it.clients()).forEach(it => {
+        it.minimized = false
+      })
+    })
+  ))
   s.myTaskList = myTaskList;
 
   const myWibox = awful.wibar({
@@ -233,7 +249,11 @@ awful.screen.connect_for_each_screen((s) => {
   s.myWibox = myWibox;
 
   const systrayWidget = wibox.widget.systray();
-  const [lSep, rSep] = [sep(), sep()];
+  const nonEmptyScreenCallbacks: ((show: boolean) => void)[] = [];
+  const onNonEmptyScreen: (w: Widget) => Widget = w => {
+    nonEmptyScreenCallbacks.push(show => { w.visible = show })
+    return w;
+  }
   client.connect_signal('manage', () => updateTasklistBordersVisibility());
   client.connect_signal('unmanage', () => updateTasklistBordersVisibility());
   client.connect_signal('tagged', () => updateTasklistBordersVisibility());
@@ -242,11 +262,9 @@ awful.screen.connect_for_each_screen((s) => {
   tag.attached_connect_signal(s, 'property::activated', () => updateTasklistBordersVisibility());
   const updateTasklistBordersVisibility = () => {
     if (s.selected_tags.flatMap((it) => it.clients()).length == 0) {
-      lSep.visible = false;
-      rSep.visible = false;
+      nonEmptyScreenCallbacks.forEach(it => it(false))
     } else {
-      lSep.visible = true;
-      rSep.visible = true;
+      nonEmptyScreenCallbacks.forEach(it => it(true))
     }
   };
   updateTasklistBordersVisibility();
@@ -264,7 +282,29 @@ awful.screen.connect_for_each_screen((s) => {
                     dpi(5),
                     dpi(5),
                   ),
-                  wibox.layout.align.horizontal(lSep, myTaskList, rSep),
+                  wibox.layout.align.horizontal(
+                    onNonEmptyScreen(wibox.widget.separator({
+                      forced_width: dpi(1),
+                      forced_height: beautiful.wibar_height + beautiful.wibar_bottom_border_size,
+                      shape: Shape.toAwesome(Shape.size.flatMap(it => Shape.box({
+                        x: 0,
+                        y: 0,
+                        ...it
+                      }))),
+                      orientation: SeparatorOrientation.Vertical
+                    })),
+                    myTaskList,
+                    onNonEmptyScreen(wibox.widget.separator({
+                      forced_width: dpi(1),
+                      forced_height: beautiful.wibar_height + beautiful.wibar_bottom_border_size,
+                      shape: Shape.toAwesome(Shape.size.flatMap(it => Shape.box({
+                        x: 0,
+                        y: 0,
+                        ...it
+                      }))),
+                      orientation: SeparatorOrientation.Vertical
+                    }))
+                  ),
                   mkWidget({
                     children: [
                       awful.widget.only_on_screen(
@@ -300,6 +340,7 @@ awful.screen.connect_for_each_screen((s) => {
     height: beautiful.wibar_height + beautiful.wibar_bottom_border_size,
     widget: wibox.container.background,
   });
+  updateTasklistBordersVisibility();
 });
 
 const globalKeys = table.join<awful.Key<Screen>>(
@@ -566,6 +607,15 @@ const clientKeys = table.join<awful.Key<Client>>(
     },
     { description: 'toggle fullscreen', group: 'client' },
   ),
+  awful.key([modkey], 'e', (c) => {
+    const screen = c.screen as Screen
+    const [fullscreenW, fullscreenH] = [screen.geometry.width, screen.geometry.height];
+    c.geometry({
+      ...c.geometry(),
+      width: fullscreenW,
+      height: fullscreenH
+    })
+  }, { description: 'expand to fullscreen', group: 'client' }),
   awful.key([modkey, ModifierKey.Shift], 'c', (it) => it.kill(), {
     description: 'close',
     group: 'client',

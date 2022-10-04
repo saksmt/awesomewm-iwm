@@ -8,5 +8,6 @@ dpiPart=
 
 Xephyr :11 $dpiPart -screen ${resolution} &
 xpid=$!
+sleep 0.1
 DISPLAY=:11 awesome -c ./rc.lua
 wait ${xpid}
