@@ -57,6 +57,7 @@ configuration {
 	kb-delete-entry: "Alt+Delete";
 	kb-mode-next: "Tab";
 	kb-mode-previous: "Shift+Tab";
+        kb-element-next: "";
 	kb-row-tab: "";
 	kb-row-first: "Ctrl+Home";
 	kb-row-last: "Ctrl+End";
