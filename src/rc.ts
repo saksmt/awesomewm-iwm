@@ -1,27 +1,26 @@
 import * as naughty from 'naughty';
 import * as beautiful from 'beautiful';
 import * as gears from 'gears';
-import {filesystem as fs, table} from 'gears';
+import { filesystem as fs, table, AlignCross, AlignX, Direction } from 'gears';
 import * as awful from 'awful';
-import {Client, Screen, spawn, Tag, tag} from 'awful';
+import { Client, Screen, spawn, Tag, tag, Keyboard, Mouse } from 'awful';
 import * as menubar from 'menubar';
 import * as wibox from 'wibox';
-import {layout, Layout, Widget} from 'wibox';
-import {option} from './data/index';
-import {AlignCross, AlignX, Direction, Index, ModifierKey, MouseButton} from 'awesomewm.4.3.ts.d';
+import { layout, Layout, Widget, widget } from 'wibox';
+import { option } from './data';
 import theme from './theme/index';
 import 'awful.remote';
-import {SeparatorOrientation} from 'awesomewm.4.3.ts.d/awesomewm/wibox/widgets/SeparatorWidget';
 import LayoutSwitcher from './widgets/keyboard-layout';
-import {forall, isSubset} from './util/index';
-import {Shape} from './graphics/index';
+import { forall, isSubset } from './util';
+import { Shape } from './graphics';
+import { terminal, rofi } from './settings';
 
 const dpi = beautiful.xresources.apply_dpi;
 
 function widgetData<
   T extends Widget,
   D extends Partial<Omit<T, 'children'>> & { children?: R[] },
-  R
+  R,
 >(data: D): { [k in string | Index]: unknown } & D {
   if (data.children) {
     const children = data.children;
@@ -45,7 +44,7 @@ function mkWidget<
   T extends Widget,
   D extends Partial<Omit<T, 'children'>> &
     ({ children?: R[]; widget: T } | { children?: R[]; layout: wibox.Layout }),
-  R
+  R,
 >(data: D): { [k in string | Index]: unknown } & D {
   return widgetData(data);
 }
@@ -73,9 +72,8 @@ awesome.connect_signal('debug::error', (err) => {
 beautiful.init(theme);
 
 const layoutSwitcher = new LayoutSwitcher(['us', 'ru']);
-const terminal = 'roxterm';
 
-const modkey = ModifierKey.Mod4;
+const modkey = Keyboard.ModifierKey.Mod4;
 
 awful.layout.layouts = [
   awful.layout.suit.floating,
@@ -97,33 +95,33 @@ dateTooltip.margins_leftright = dpi(10);
 dateTooltip.margins_topbottom = dpi(5);
 
 const taglistButtons = table.join<awful.Button<Tag>>(
-  awful.button([], MouseButton.Left, (it) => it.view_only()),
-  awful.button([modkey], MouseButton.Left, (it) =>
+  awful.button([], Mouse.Button.Left, (it) => it.view_only()),
+  awful.button([modkey], Mouse.Button.Left, (it) =>
     option(client.focus).forEach((t) => t.move_to_tag(it)),
   ),
-  awful.button([], MouseButton.Right, tag.viewtoggle),
-  awful.button([modkey], MouseButton.Right, (it) =>
+  awful.button([], Mouse.Button.Right, tag.viewtoggle),
+  awful.button([modkey], Mouse.Button.Right, (it) =>
     option(client.focus).forEach((t) => t.toggle_tag(it)),
   ),
-  awful.button([], MouseButton.ScrollDown, (it) => tag.viewnext(it.screen)),
-  awful.button([], MouseButton.ScrollUp, (it) => tag.viewprev(it.screen)),
+  awful.button([], Mouse.Button.ScrollDown, (it) => tag.viewnext(it.screen)),
+  awful.button([], Mouse.Button.ScrollUp, (it) => tag.viewprev(it.screen)),
 );
 
 const tasklistButtons = table.join<awful.Button<Client>>(
-  awful.button([], MouseButton.Left, (it) => {
+  awful.button([], Mouse.Button.Left, (it) => {
     if (it == client.focus) {
       it.minimized = true;
     } else {
       it.emit_signal('request::activate', 'taglist', { raise: true });
     }
   }),
-  awful.button([], MouseButton.Right, (it) => {
+  awful.button([], Mouse.Button.Right, (it) => {
     if (it.minimized) {
       it.emit_signal('request::activate', 'taglist', { raise: true });
     } else {
       it.minimized = true;
     }
-  })
+  }),
 );
 
 const setWallpaper = (s: Screen) => {
@@ -137,7 +135,7 @@ const setWallpaper = (s: Screen) => {
 
 const sep = () =>
   wibox.widget.separator({
-    orientation: SeparatorOrientation.Vertical,
+    orientation: wibox.widget.Separator.Orientation.Vertical,
     forced_width: dpi(1),
   });
 
@@ -157,8 +155,8 @@ awful.screen.connect_for_each_screen((s) => {
   s.myLayoutBox = myLayoutBox;
   myLayoutBox.buttons(
     table.join(
-      awful.button([], MouseButton.Left, () => awful.layout.inc(1)),
-      awful.button([], MouseButton.Right, () => awful.layout.inc(-1))
+      awful.button([], Mouse.Button.Left, () => awful.layout.inc(1)),
+      awful.button([], Mouse.Button.Right, () => awful.layout.inc(-1)),
     ),
   );
 
@@ -172,7 +170,7 @@ awful.screen.connect_for_each_screen((s) => {
         mkWidget({
           width: dpi(17),
           height: dpi(beautiful.wibar_height),
-          strategy: wibox.containers.ConstraintStrategy.Exact,
+          strategy: wibox.container.Constraint.Strategy.Exact,
           widget: wibox.container.constraint,
         }),
       ],
@@ -227,18 +225,28 @@ awful.screen.connect_for_each_screen((s) => {
       widget: wibox.container.background,
     }),
   });
-  myTaskList.buttons(table.join(
-    awful.button([ModifierKey.Control], MouseButton.Left, () => {
-      s.selected_tags.flatMap(it => it.clients()).forEach(it => {
-        it.minimized = true
-      })
-    }),
-    awful.button([ModifierKey.Control, ModifierKey.Shift], MouseButton.Left, () => {
-      s.selected_tags.flatMap(it => it.clients()).forEach(it => {
-        it.minimized = false
-      })
-    })
-  ))
+  myTaskList.buttons(
+    table.join(
+      awful.button([Keyboard.ModifierKey.Control], Mouse.Button.Left, () => {
+        s.selected_tags
+          .flatMap((it) => it.clients())
+          .forEach((it) => {
+            it.minimized = true;
+          });
+      }),
+      awful.button(
+        [Keyboard.ModifierKey.Control, Keyboard.ModifierKey.Shift],
+        Mouse.Button.Left,
+        () => {
+          s.selected_tags
+            .flatMap((it) => it.clients())
+            .forEach((it) => {
+              it.minimized = false;
+            });
+        },
+      ),
+    ),
+  );
   s.myTaskList = myTaskList;
 
   const myWibox = awful.wibar({
@@ -250,10 +258,12 @@ awful.screen.connect_for_each_screen((s) => {
 
   const systrayWidget = wibox.widget.systray();
   const nonEmptyScreenCallbacks: ((show: boolean) => void)[] = [];
-  const onNonEmptyScreen: (w: Widget) => Widget = w => {
-    nonEmptyScreenCallbacks.push(show => { w.visible = show })
+  const onNonEmptyScreen: (w: Widget) => Widget = (w) => {
+    nonEmptyScreenCallbacks.push((show) => {
+      w.visible = show;
+    });
     return w;
-  }
+  };
   client.connect_signal('manage', () => updateTasklistBordersVisibility());
   client.connect_signal('unmanage', () => updateTasklistBordersVisibility());
   client.connect_signal('tagged', () => updateTasklistBordersVisibility());
@@ -262,9 +272,9 @@ awful.screen.connect_for_each_screen((s) => {
   tag.attached_connect_signal(s, 'property::activated', () => updateTasklistBordersVisibility());
   const updateTasklistBordersVisibility = () => {
     if (s.selected_tags.flatMap((it) => it.clients()).length == 0) {
-      nonEmptyScreenCallbacks.forEach(it => it(false))
+      nonEmptyScreenCallbacks.forEach((it) => it(false));
     } else {
-      nonEmptyScreenCallbacks.forEach(it => it(true))
+      nonEmptyScreenCallbacks.forEach((it) => it(true));
     }
   };
   updateTasklistBordersVisibility();
@@ -283,27 +293,39 @@ awful.screen.connect_for_each_screen((s) => {
                     dpi(5),
                   ),
                   wibox.layout.align.horizontal(
-                    onNonEmptyScreen(wibox.widget.separator({
-                      forced_width: dpi(1),
-                      forced_height: beautiful.wibar_height + beautiful.wibar_bottom_border_size,
-                      shape: Shape.toAwesome(Shape.size.flatMap(it => Shape.box({
-                        x: 0,
-                        y: 0,
-                        ...it
-                      }))),
-                      orientation: SeparatorOrientation.Vertical
-                    })),
+                    onNonEmptyScreen(
+                      wibox.widget.separator({
+                        forced_width: dpi(1),
+                        forced_height: beautiful.wibar_height + beautiful.wibar_bottom_border_size,
+                        shape: Shape.toAwesome(
+                          Shape.size.flatMap((it) =>
+                            Shape.box({
+                              x: 0,
+                              y: 0,
+                              ...it,
+                            }),
+                          ),
+                        ),
+                        orientation: wibox.widget.Separator.Orientation.Vertical,
+                      }),
+                    ),
                     myTaskList,
-                    onNonEmptyScreen(wibox.widget.separator({
-                      forced_width: dpi(1),
-                      forced_height: beautiful.wibar_height + beautiful.wibar_bottom_border_size,
-                      shape: Shape.toAwesome(Shape.size.flatMap(it => Shape.box({
-                        x: 0,
-                        y: 0,
-                        ...it
-                      }))),
-                      orientation: SeparatorOrientation.Vertical
-                    }))
+                    onNonEmptyScreen(
+                      wibox.widget.separator({
+                        forced_width: dpi(1),
+                        forced_height: beautiful.wibar_height + beautiful.wibar_bottom_border_size,
+                        shape: Shape.toAwesome(
+                          Shape.size.flatMap((it) =>
+                            Shape.box({
+                              x: 0,
+                              y: 0,
+                              ...it,
+                            }),
+                          ),
+                        ),
+                        orientation: wibox.widget.Separator.Orientation.Vertical,
+                      }),
+                    ),
                   ),
                   mkWidget({
                     children: [
@@ -316,6 +338,7 @@ awful.screen.connect_for_each_screen((s) => {
                           theme.systray_icon_margin,
                         ),
                       ),
+                      sep(),
                       layoutSwitcher.wiboxWidget,
                       sep(),
                       myTextClock,
@@ -373,7 +396,7 @@ const globalKeys = table.join<awful.Key<Screen>>(
     group: 'client',
   }),
   awful.key(
-    [modkey, ModifierKey.Mod1],
+    [modkey, Keyboard.ModifierKey.Mod1],
     'Left',
     () => awful.client.swap.bydirection(Direction.Left),
     {
@@ -382,7 +405,7 @@ const globalKeys = table.join<awful.Key<Screen>>(
     },
   ),
   awful.key(
-    [modkey, ModifierKey.Mod1],
+    [modkey, Keyboard.ModifierKey.Mod1],
     'Right',
     () => awful.client.swap.bydirection(Direction.Right),
     {
@@ -390,12 +413,17 @@ const globalKeys = table.join<awful.Key<Screen>>(
       group: 'client',
     },
   ),
-  awful.key([modkey, ModifierKey.Mod1], 'Up', () => awful.client.swap.bydirection(Direction.Up), {
-    description: 'swap with up client',
-    group: 'client',
-  }),
   awful.key(
-    [modkey, ModifierKey.Mod1],
+    [modkey, Keyboard.ModifierKey.Mod1],
+    'Up',
+    () => awful.client.swap.bydirection(Direction.Up),
+    {
+      description: 'swap with up client',
+      group: 'client',
+    },
+  ),
+  awful.key(
+    [modkey, Keyboard.ModifierKey.Mod1],
     'Down',
     () => awful.client.swap.bydirection(Direction.Down),
     {
@@ -404,7 +432,7 @@ const globalKeys = table.join<awful.Key<Screen>>(
     },
   ),
   awful.key(
-    [modkey, ModifierKey.Control],
+    [modkey, Keyboard.ModifierKey.Control],
     'Left',
     () => awful.screen.focus_bydirection(Direction.Left, awful.screen.focused() as Screen),
     {
@@ -413,7 +441,7 @@ const globalKeys = table.join<awful.Key<Screen>>(
     },
   ),
   awful.key(
-    [modkey, ModifierKey.Control],
+    [modkey, Keyboard.ModifierKey.Control],
     'Right',
     () => awful.screen.focus_bydirection(Direction.Right, awful.screen.focused() as Screen),
     {
@@ -422,7 +450,7 @@ const globalKeys = table.join<awful.Key<Screen>>(
     },
   ),
   awful.key(
-    [modkey, ModifierKey.Control],
+    [modkey, Keyboard.ModifierKey.Control],
     'Up',
     () => awful.screen.focus_bydirection(Direction.Up, awful.screen.focused() as Screen),
     {
@@ -431,7 +459,7 @@ const globalKeys = table.join<awful.Key<Screen>>(
     },
   ),
   awful.key(
-    [modkey, ModifierKey.Control],
+    [modkey, Keyboard.ModifierKey.Control],
     'Down',
     () => awful.screen.focus_bydirection(Direction.Down, awful.screen.focused() as Screen),
     {
@@ -452,11 +480,11 @@ const globalKeys = table.join<awful.Key<Screen>>(
     description: 'open a terminal',
     group: 'launcher',
   }),
-  awful.key([modkey, ModifierKey.Control], 'r', awesome.restart, {
+  awful.key([modkey, Keyboard.ModifierKey.Control], 'r', awesome.restart, {
     description: 'reload awesome',
     group: 'awesome',
   }),
-  awful.key([modkey, ModifierKey.Shift], 'q', () => awesome.quit(), {
+  awful.key([modkey, Keyboard.ModifierKey.Shift], 'q', () => awesome.quit(), {
     description: 'quit',
     group: 'awesome',
   }),
@@ -468,19 +496,19 @@ const globalKeys = table.join<awful.Key<Screen>>(
     description: 'decrease master width factor',
     group: 'layout',
   }),
-  awful.key([modkey, ModifierKey.Shift], 'h', () => tag.incnmaster(1, null, true), {
+  awful.key([modkey, Keyboard.ModifierKey.Shift], 'h', () => tag.incnmaster(1, null, true), {
     description: 'increase the number of master clients',
     group: 'layout',
   }),
-  awful.key([modkey, ModifierKey.Shift], 'l', () => tag.incnmaster(-1, null, true), {
+  awful.key([modkey, Keyboard.ModifierKey.Shift], 'l', () => tag.incnmaster(-1, null, true), {
     description: 'decrease the number of master clients',
     group: 'layout',
   }),
-  awful.key([modkey, ModifierKey.Control], 'h', () => tag.incncol(1, null, true), {
+  awful.key([modkey, Keyboard.ModifierKey.Control], 'h', () => tag.incncol(1, null, true), {
     description: 'increase the number of columns',
     group: 'layout',
   }),
-  awful.key([modkey, ModifierKey.Control], 'l', () => tag.incncol(-1, null, true), {
+  awful.key([modkey, Keyboard.ModifierKey.Control], 'l', () => tag.incncol(-1, null, true), {
     description: 'decrease the number of columns',
     group: 'layout',
   }),
@@ -488,12 +516,12 @@ const globalKeys = table.join<awful.Key<Screen>>(
     description: 'select next',
     group: 'layout',
   }),
-  awful.key([modkey, ModifierKey.Shift], 'space', () => awful.layout.inc(-1), {
+  awful.key([modkey, Keyboard.ModifierKey.Shift], 'space', () => awful.layout.inc(-1), {
     description: 'select previous',
     group: 'layout',
   }),
   awful.key(
-    [modkey, ModifierKey.Control],
+    [modkey, Keyboard.ModifierKey.Control],
     'n',
     () =>
       option(awful.client.restore()).forEach((it) =>
@@ -501,7 +529,7 @@ const globalKeys = table.join<awful.Key<Screen>>(
       ),
     { description: 'restore minimized', group: 'client' },
   ),
-  awful.key([modkey], 'r', () => spawn('rofi -show drun'), {
+  awful.key([modkey], 'r', () => spawn([...rofi, '-show', 'drun']), {
     description: 'run prompt',
     group: 'launcher',
   }),
@@ -519,11 +547,11 @@ const globalKeys = table.join<awful.Key<Screen>>(
       ),
     { description: 'lua execute prompt', group: 'awesome' },
   ),
-  awful.key([modkey], 'p', () => spawn('rofi -show combi'), {
+  awful.key([modkey], 'p', () => spawn([...rofi, '-show', 'combi']), {
     description: 'show the menubar',
     group: 'launcher',
   }),
-  awful.key([modkey], 'w', () => spawn('rofi -show window')),
+  awful.key([modkey], 'w', () => spawn([...rofi, '-show', 'window'])),
   awful.key(
     [modkey],
     'u',
@@ -551,7 +579,7 @@ const tagKeys = range(1, 9)
         { description: `toggle tag #${tagName}`, group: 'tag' },
       ),
       awful.key(
-        [modkey, ModifierKey.Control],
+        [modkey, Keyboard.ModifierKey.Control],
         `#${tagName + 9}`,
         () =>
           option(awful.screen.focused())
@@ -560,7 +588,7 @@ const tagKeys = range(1, 9)
         { description: `toggle tag #${tagName}`, group: 'tag' },
       ),
       awful.key(
-        [modkey, ModifierKey.Shift],
+        [modkey, Keyboard.ModifierKey.Shift],
         `#${tagName + 9}`,
         () =>
           option(awful.screen.focused())
@@ -569,7 +597,7 @@ const tagKeys = range(1, 9)
         { description: `move focused client to tag #${tagName}`, group: 'tag' },
       ),
       awful.key(
-        [modkey, ModifierKey.Shift, ModifierKey.Control],
+        [modkey, Keyboard.ModifierKey.Shift, Keyboard.ModifierKey.Control],
         `#${tagName + 9}`,
         () =>
           option(awful.screen.focused())
@@ -584,14 +612,14 @@ const tagKeys = range(1, 9)
 root.keys([layoutSwitcher].reduce((r, w) => w.registerKeys(r), table.join(globalKeys, tagKeys)));
 
 const clientButtons = table.join<awful.Button<Client>>(
-  awful.button([], MouseButton.Left, (it) =>
+  awful.button([], Mouse.Button.Left, (it) =>
     it.emit_signal('request::activate', 'mouse_click', { raise: true }),
   ),
-  awful.button([modkey], MouseButton.Left, (it) => {
+  awful.button([modkey], Mouse.Button.Left, (it) => {
     it.emit_signal('request::activate', 'mouse_click', { raise: true });
     awful.mouse.client.move(it);
   }),
-  awful.button([modkey], MouseButton.Right, (it) => {
+  awful.button([modkey], Mouse.Button.Right, (it) => {
     it.emit_signal('request::activate', 'mouse_click', { raise: true });
     awful.mouse.client.resize(it);
   }),
@@ -607,21 +635,26 @@ const clientKeys = table.join<awful.Key<Client>>(
     },
     { description: 'toggle fullscreen', group: 'client' },
   ),
-  awful.key([modkey], 'e', (c) => {
-    const screen = c.screen as Screen
-    const [fullscreenW, fullscreenH] = [screen.geometry.width, screen.geometry.height];
-    c.geometry({
-      ...c.geometry(),
-      width: fullscreenW,
-      height: fullscreenH
-    })
-  }, { description: 'expand to fullscreen', group: 'client' }),
-  awful.key([modkey, ModifierKey.Shift], 'c', (it) => it.kill(), {
+  awful.key(
+    [modkey],
+    'e',
+    (c) => {
+      const screen = c.screen as Screen;
+      const [fullscreenW, fullscreenH] = [screen.geometry.width, screen.geometry.height];
+      c.geometry({
+        ...c.geometry(),
+        width: fullscreenW,
+        height: fullscreenH,
+      });
+    },
+    { description: 'expand to fullscreen', group: 'client' },
+  ),
+  awful.key([modkey, Keyboard.ModifierKey.Shift], 'c', (it) => it.kill(), {
     description: 'close',
     group: 'client',
   }),
   awful.key(
-    [modkey, ModifierKey.Control],
+    [modkey, Keyboard.ModifierKey.Control],
     'space',
     (it) => {
       it.floating = !it.floating;
@@ -631,10 +664,15 @@ const clientKeys = table.join<awful.Key<Client>>(
       group: 'client',
     },
   ),
-  awful.key([modkey, ModifierKey.Control], 'Return', (it) => it.swap(awful.client.getmaster()), {
-    description: 'move to master',
-    group: 'client',
-  }),
+  awful.key(
+    [modkey, Keyboard.ModifierKey.Control],
+    'Return',
+    (it) => it.swap(awful.client.getmaster()),
+    {
+      description: 'move to master',
+      group: 'client',
+    },
+  ),
   awful.key([modkey], 'o', (it) => it.move_to_screen(), {
     description: 'move to screen',
     group: 'client',
@@ -671,7 +709,7 @@ const clientKeys = table.join<awful.Key<Client>>(
     { description: '(un)maximize', group: 'client' },
   ),
   awful.key(
-    [modkey],
+    [modkey, Keyboard.ModifierKey.Control],
     'm',
     (it) => {
       it.maximized_vertical = !it.maximized_vertical;
@@ -680,7 +718,7 @@ const clientKeys = table.join<awful.Key<Client>>(
     { description: '(un)maximize vertically', group: 'client' },
   ),
   awful.key(
-    [modkey, ModifierKey.Shift],
+    [modkey, Keyboard.ModifierKey.Shift],
     'm',
     (it) => {
       it.maximized_horizontal = !it.maximized_horizontal;

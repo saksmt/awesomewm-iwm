@@ -1,5 +1,5 @@
 import { debug } from 'gears';
-import { option } from '../data/index';
+import { option } from '../data';
 import { logConfig, LogLevel } from '../log-config';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -15,8 +15,13 @@ export class Logger {
 
   private writeRaw(data: string): void {
     if (logConfig.writeInFile) {
-      const [h] = io.open(`${logConfig.logDirectory}/${currentDate}.log`, 'a') as [LuaFile];
-      (h as LuaFile).write(data + '\n');
+      const h = assert(
+        ...(io.open(`${logConfig.logDirectory}/${currentDate}.log`, 'a') as unknown as [
+          LuaFile | undefined,
+          string,
+        ]),
+      ) as unknown as LuaFile;
+      h.write(data + '\n');
       h.flush();
       h.close();
     } else {
@@ -24,7 +29,7 @@ export class Logger {
     }
   }
 
-  private write(message: string, level: string, context: any[]): void {
+  private write(message: string, level: string, context: unknown[]): void {
     this.writeRaw(`[${level.toUpperCase()}] ${this.name}: ${message}`);
     context.forEach((value, index) => {
       const valueDump = debug.dump_return(value, null, 10);
@@ -61,6 +66,29 @@ export class Logger {
     }
   }
 
+  /**
+   * @TupleReturn
+   */
+  private static hackCastToLuaTable(v: any): any {
+    return v;
+  }
+
+  /**
+   * Logs message before failing with lua's assert
+   * Expects assertible to be unpacked lua table, if tstl-typed value is annotated with TupleReturn
+   * pass such value via spread operator
+   */
+  assert<T>(message: string, assertible: any): T {
+    const [v, f] = Logger.hackCastToLuaTable(assertible) as unknown as [T | undefined, string];
+    if (v) {
+      return v as T;
+    } else {
+      this.error(`${message}: ${f}`);
+      assert(assertible);
+      throw 'cant be';
+    }
+  }
+
   warn(message: string, context?: any[]): void {
     if (this.logLevel() <= LogLevel.Warn) {
       this.write(message, 'warn', context ?? []);
@@ -73,6 +101,7 @@ export class Logger {
     }
   }
 }
+
 /* eslint-enable */
 
 const currentDate = os.date('%y.%m.%d_%H');

@@ -1,6 +1,5 @@
-import { PositiveReal } from 'awesomewm.4.3.ts.d';
 import { FontSlant, FontWeight, Pattern, Surface } from 'oocairo';
-import { Shape } from '../graphics/index';
+import { Shape } from '../graphics';
 
 export default function textWallpaper(
   width: PositiveReal,

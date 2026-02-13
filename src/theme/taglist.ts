@@ -1,8 +1,7 @@
 import { color } from 'gears';
-import { xresources } from 'beautiful';
-import { Shape } from '../graphics/index';
+import { xresources, TaglistVariables } from 'beautiful';
+import { Shape } from '../graphics';
 import { Antialias } from 'oocairo';
-import { TaglistVariables } from 'awesomewm.4.3.ts.d/awesomewm/beautiful/variables/taglist';
 
 const dpi = xresources.apply_dpi;
 

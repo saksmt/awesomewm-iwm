@@ -2,14 +2,14 @@
   "compilerOptions": {
     "target": "esnext",
     "lib": ["esnext"],
+    "module": "None",
     "moduleResolution": "node",
-    "types": ["lua-types/5.3", "typescript-to-lua/language-extensions", "awesomewm.4.3.ts.d"],
+    "types": ["lua-types/5.3", "@typescript-to-lua/language-extensions", "awesomewm.4.3.d.ts"],
     "strict": true,
     "rootDir": "src"
   },
   "tstl": {
     "luaTarget": "5.3",
-    "luaLibImport": "always",
     "noImplicitSelf": true,
     "noHeader": true,
     "luaBundle": "./rc.lua",

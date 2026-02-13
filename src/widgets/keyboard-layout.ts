@@ -1,9 +1,8 @@
 import Widget from './Widget';
 import * as wibox from 'wibox';
-import { button, key, Key, Screen } from 'awful';
-import { Index, ModifierKey, MouseButton } from 'awesomewm.4.3.ts.d';
-import { Logger } from '../util/index';
-import { TargetedWidget } from 'awesomewm.4.3.ts.d/awesomewm/wibox/HasMouseSignals';
+import { button, key, Key, Screen, Mouse, Keyboard } from 'awful';
+import { Logger } from '../util';
+import { WidgetMouseEvents } from 'wibox';
 import { xresources } from 'beautiful';
 
 const dpi = xresources.apply_dpi;
@@ -16,13 +15,16 @@ export default class LayoutSwitcher implements Widget {
   private current: Index;
 
   constructor(private readonly layouts: string[]) {
-    const currentLayoutHandle = io.popen(
+    const [currentLayoutHandle, err] = io.popen(
       'setxkbmap -query | grep layout: | tr -d " " | cut -d: -f2',
-    ) as LuaFile;
+    );
+    if (currentLayoutHandle === null || currentLayoutHandle === undefined) {
+      throw new Error(`Failed to get current layout: ${err}`);
+    }
 
     this.wiboxWidget.buttons([
-      ...button<TargetedWidget>([], MouseButton.Left, () => this.next()),
-      ...button<TargetedWidget>([], MouseButton.Right, () => this.previous()),
+      ...button<WidgetMouseEvents.TargetedWidget>([], Mouse.Button.Left, () => this.next()),
+      ...button<WidgetMouseEvents.TargetedWidget>([], Mouse.Button.Right, () => this.previous()),
     ]);
     let reportedCurrent = 'UNKNOWN';
     for (const [layout] of currentLayoutHandle.lines()) {
@@ -55,10 +57,10 @@ export default class LayoutSwitcher implements Widget {
   registerKeys(globals: Key<Screen>[]): Key<Screen>[] {
     return [
       ...globals,
-      ...key<Screen>([ModifierKey.Mod1], 'Shift_L', () => this.next()),
-      ...key<Screen>([ModifierKey.Mod1], 'Shift_R', () => this.next()),
-      ...key<Screen>([ModifierKey.Shift], 'Alt_L', () => this.next()),
-      ...key<Screen>([ModifierKey.Shift], 'Alt_R', () => this.next()),
+      ...key<Screen>([Keyboard.ModifierKey.Mod1], 'Shift_L', () => this.next()),
+      ...key<Screen>([Keyboard.ModifierKey.Mod1], 'Shift_R', () => this.next()),
+      ...key<Screen>([Keyboard.ModifierKey.Shift], 'Alt_L', () => this.next()),
+      ...key<Screen>([Keyboard.ModifierKey.Shift], 'Alt_R', () => this.next()),
     ];
   }
 }

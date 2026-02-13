@@ -1,6 +1,6 @@
 import { color } from 'gears';
 import { Pattern } from 'oocairo';
-import { Shape } from '../graphics/index';
+import { Shape } from '../graphics';
 import { xresources } from 'beautiful';
 
 const dpi = xresources.apply_dpi;

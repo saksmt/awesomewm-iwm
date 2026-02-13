@@ -1,15 +1,15 @@
 * {
     fg: #bbbbbb;
     bg: #3c3f41;
-    selected-bg: #2f65ca;
+    active-bg: #234c9922;
+    selected-bg: #3e5f9d77;
     font: "Source Code Pro 26";
 
     background-color: var(bg);
     text-color: var(fg);
     border-color: #646464;
     margin: 0;
-
-    spacing:0;
+    spacing: 0;
 }
 
 window {
@@ -20,6 +20,7 @@ window {
     border-color: #616161;
     children: [ mainbox ];
     border-radius: 1;
+    padding: 0;
 }
 
 mainbox {
@@ -29,6 +30,7 @@ mainbox {
 
 case-indicator {
     margin: 0 2em 0;
+    text-color: var(fg);
 }
 
 textbox-icon-search {
@@ -43,9 +45,19 @@ textbox-icon-search {
 
 inputbar {
     orientation: horizontal;
-    padding:  0.5% 0;
+    padding: 0.5% 0;
     children: [ textbox-icon-search, entry, case-indicator ];
     border: 0 0 0.1%;
+    text-color: var(fg);
+}
+
+entry {
+    background-color: var(bg);
+    text-color: var(fg);
+    border-color: #646464;
+    margin: 0;
+    spacing: 0;
+    placeholder: "";
 }
 
 error-message {
@@ -53,6 +65,9 @@ error-message {
 }
 
 button {
+    cursor: pointer;
+    spacing: 0;
+    text-color: var(fg);
     background-color: #45494a;
     padding: 0.5%;
     border: 0 0 0.1%;
@@ -61,20 +76,54 @@ button {
 
 button selected {
     background-color: #555a5e;
+    text-color: var(fg);
 }
 
 element {
     background-color: var(bg);
-    text-color:       var(fg);
+    text-color: var(fg);
     padding: 0.5%;
+    cursor: pointer;
+    spacing: 0;
 
     children: [ element-icon, element-text ];
+}
+element normal.normal {
+    background-color: var(bg);
+    text-color: var(fg);
+}
+element alternate.normal {
+    background-color: var(bg);
+    text-color: var(fg);
+}
+element normal.active {
+    background-color: var(active-bg);
+    text-color:       var(fg);
+}
+element alternate.active {
+    background-color: var(active-bg);
+    text-color:       var(fg);
+}
+element selected.normal {
+    background-color: var(selected-bg);
+    text-color:       var(fg);
+}
+element selected.active {
+    background-color: var(selected-bg);
+    text-color:       var(fg);
+}
+
+element-text {
+    background-color: transparent;
+    text-color: var(fg);
 }
 
 element-icon {
     expand: false;
     size: 0.8em;
     padding: 0 0.5% 0 0;
+    text-color: var(fg);
+    background-color: transparent;
 }
 
 listview {
@@ -83,6 +132,7 @@ listview {
     spacing: 0;
     cycle: true;
     padding: 0 -0.7% 0 0;
+    border: none;
 }
 
 scrollbar {
@@ -92,15 +142,9 @@ scrollbar {
     index: 999;
 }
 
-element selected {
-    background-color: var(selected-bg);
+element normal.urgent {
+    background-color: #9d493e99;
 }
-
-element .active {
-    background-color: #3e5f9d99;
-}
-
-element .urgent {
-    /*background-color: #9d693e99;*/
+element alternate.urgent {
     background-color: #9d493e99;
 }

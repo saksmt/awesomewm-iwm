@@ -1,5 +1,4 @@
-import { PositiveReal, RealNumber, Fraction } from 'awesomewm.4.3.ts.d';
-import { Reader } from '../data/index';
+import { Reader } from '../data';
 import { color, shape, surface } from 'gears';
 import { Surface, CairoContext, Pattern } from 'oocairo';
 

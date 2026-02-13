@@ -8,7 +8,7 @@ export enum LogLevel {
 }
 
 export const logConfig = {
-  logDirectory: '~/.log/awesomewm',
+  logDirectory: os.getenv('HOME') + '/.log/awesomewm',
   loggers: {
     '<root>': LogLevel.Info,
   } as Record<string, LogLevel>,

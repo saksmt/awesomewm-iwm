@@ -4,9 +4,9 @@
   "version": "0.0.1",
   "description": "awesomewm IWM config",
   "main": "src/rc.ts",
+  "type": "module",
   "scripts": {
     "build": "tstl",
-    "install": "cp ./rc.lua ~/.config/awesome/rc.lua",
     "watch": "tstl --watch",
     "format": "prettier --write .",
     "format-check": "prettier --check .",
@@ -27,21 +27,16 @@
     "tabWidth": 2
   },
   "dependencies": {
-    "awesomewm.4.3.ts.d": "0.0.1-rc2",
-    "lua-types": "^2.8.0"
+    "awesomewm.4.3.d.ts": "0.0.1",
+    "lua-types": "^2.13.1"
   },
   "devDependencies": {
-    "@typescript-eslint/eslint-plugin": "^4.15.2",
-    "@typescript-eslint/parser": "^4.15.2",
-    "eslint": "^7.20.0",
-    "eslint-config-prettier": "^7.2.0",
-    "eslint-config-standard": "^16.0.2",
-    "eslint-plugin-import": "^2.22.1",
-    "eslint-plugin-node": "^11.1.0",
-    "eslint-plugin-prettier": "^3.3.1",
-    "eslint-plugin-promise": "^4.3.1",
-    "prettier": "^2.2.0",
-    "typescript": "^4.2.2",
-    "typescript-to-lua": "^0.37.1"
+    "@typescript-eslint/eslint-plugin": "^8.54.0",
+    "@typescript-eslint/parser": "^8.54.0",
+    "eslint": "9.26.0",
+    "eslint-config-prettier": "^10.1.8",
+    "prettier": "^3.8.1",
+    "typescript": "^5.9.3",
+    "typescript-to-lua": "^1.33.2"
   }
 }

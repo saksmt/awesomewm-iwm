@@ -1,5 +1,5 @@
 import { color } from 'gears';
-import { Shape } from '../graphics/index';
+import { Shape } from '../graphics';
 import { xresources } from 'beautiful';
 import { panelHeight } from './base';
 

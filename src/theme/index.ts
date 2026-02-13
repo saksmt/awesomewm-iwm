@@ -6,7 +6,7 @@ import { layoutIcons } from './layoutIcons';
 import { tasklistTheme } from './tasklist';
 import { taglistTheme } from './taglist';
 import { panelHeight, systrayIconSize, systrayMargin } from './base';
-import { Shape } from '../graphics/index';
+import { Shape } from '../graphics';
 import * as naughty from 'naughty';
 
 const dpi = xresources.apply_dpi;
