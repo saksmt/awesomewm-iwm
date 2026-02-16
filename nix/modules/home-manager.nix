@@ -14,7 +14,7 @@ in
     # of CONFIG_HOME when used xdg.configFile. This method on the other hand
     # is foolproof
     home.file.".config/awesome/rc.lua" = (
-      lib.mkIf (!cfg.install-only) {
+      lib.mkIf (cfg.enable && !cfg.install-only) {
         text = ''
           require('awesome-iwm')
         '';
